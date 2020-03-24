@@ -1,0 +1,62 @@
+{
+  "plugins": [
+    "@typescript-eslint",
+    "eslint-comments",
+    "promise",
+    "unicorn"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "eslint-config-ali/react",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:eslint-comments/recommended",
+    "plugin:jest/recommended",
+    "plugin:promise/recommended",
+    "plugin:unicorn/recommended",
+    "prettier",
+    "prettier/react",
+    "prettier/@typescript-eslint"
+  ],
+  "env": {
+    "node": true,
+    "browser": true,
+    "jest": true
+  },
+  "globals": {},
+  "rules": {
+    "@typescript-eslint/interface-name-prefix": "off",
+    "@typescript-eslint/no-object-literal-type-assertion": "off",
+    "@typescript-eslint/explicit-member-accessibility": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-empty-interface": "off",
+    "@typescript-eslint/explicit-function-return-type": "off",
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "never",
+        "functions": "ignore"
+      }
+    ],
+    "no-prototype-builtins": "off",
+    "import/prefer-default-export": "off",
+    "promise/catch-or-return": "off",
+    "promise/always-return": "off",
+    "react/destructuring-assignment": "off",
+    "react/jsx-filename-extension": "off",
+    "react/sort-comp": "off",
+    "react/no-array-index-key": "off",
+    "semi": ["error", "always"],
+    "no-param-reassign": "off",
+    "arrow-parens": ["error", "always"],
+    "no-console": [1, { "allow": ["warn", "error"] }],
+    "quotes": [2, "single"],
+    "jsx-quotes": ["error", "prefer-double"],
+    "unicorn/prevent-abbreviations": "off",
+    "react/no-danger": "off",
+    "unicorn/catch-error-name": "off",
+    "react/no-did-mount-set-state": "off"
+  }
+}
