@@ -7,6 +7,14 @@
   "plugins": [
     "@babel/plugin-transform-runtime",
     [
+      "babel-plugin-import",
+      {
+        "libraryName": "antd",
+        "style": true
+      },
+      "antd"
+    ],
+    [
       "@babel/plugin-proposal-decorators",
       {
         "legacy": true
