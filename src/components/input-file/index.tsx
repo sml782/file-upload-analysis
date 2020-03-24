@@ -14,19 +14,25 @@ class InputFile extends Component<IProps> {
 
   private inputRef: React.RefObject<HTMLInputElement> = React.createRef();
 
-  private handleChangeFile = (...rest: any[]) => {
-    console.log(rest);
+  private handleChangeFile = (event: React.ChangeEvent<HTMLInputElement>): void => {
+    const {files} = event.target;
+    if (!files) {
+      return;
+    }
+    const [file] = files;
+    if (!file) {
+      return;
+    }
+    console.dir(file);
   }
 
-  onSelect = (event: React.MouseEvent<HTMLButtonElement>) => {
-    // event.preventDefault();
+  onSelect = () => {
     const { current: inputElement } = this.inputRef;
-    console.dir(inputElement);
     if (!inputElement) {
       return;
     }
 
-    inputElement.focus();
+    inputElement.click();
   }
 
   render() {
