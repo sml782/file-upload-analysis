@@ -64,3 +64,7 @@ client/api
 
 config/
 src/service-worker.ts
+public/
+
+# 服务
+server/
