@@ -1,22 +1,52 @@
 import React, { Component } from 'react';
-// import { Button } from 'antd';
+import { Progress } from 'antd';
 import { FileObject } from '../../constants/upload';
 import InputFile from '../input-file';
 import request from '../../common/request';
 
 interface IState {
-  fileList: FileObject[];
   uploading: boolean;
+  percent: number;
 }
 
 class UploadComp extends Component<{}, IState> {
 
-  // readonly state = {
-  //   fileList: [],
-  //   uploading: false,
-  // };
+  readonly state = {
+    uploading: false,
+    percent: 0,
+  };
+
+  private uploadedList: number[] = []
 
   private fileObject: FileObject | null = null;
+
+  sUpload = () => {
+    this.setState({
+      uploading: true,
+      percent: 0,
+    });
+  }
+
+  eUpload = () => {
+    this.setState({
+      uploading: false,
+    });
+  }
+
+  notifyPercent = (percent: number) => {
+    this.setState({
+      percent,
+    });
+  }
+
+  calculatePrecent = (index: number) => {
+    const { chunkFileList } = this.fileObject;
+    if (!chunkFileList) {
+      return;
+    }
+    this.uploadedList.push(index);
+    const percent = this.uploadedList.length / chunkFileList.length;
+  }
 
   beforeUpload = (fileObject: FileObject): void => {
     this.fileObject = fileObject;
@@ -39,7 +69,10 @@ class UploadComp extends Component<{}, IState> {
         formData.append('chunk', chunk);
         formData.append('hash', uid);
         formData.append('index', String(index));
-        return request.post('/upload', formData);
+        return request.post('http://localhost:6001/upload', formData)
+          .then(() => {
+
+          });
       });
     await Promise.all(requestList);
   }
@@ -60,11 +93,22 @@ class UploadComp extends Component<{}, IState> {
 
   // }
 
+  renderPercent = (): React.ReactNode => {
+    const { percent, uploading } = this.state;
+    if (!uploading) {
+      return null;
+    }
+    return (
+      <Progress percent={percent} />
+    );
+  }
+
   render() {
     // const { fileList, uploading } = this.state;
     return (
       <div>
         <InputFile beforeUpload={this.beforeUpload} />
+        {this.renderPercent()}
       </div>
     );
   }
