@@ -1,6 +1,11 @@
 
 export type UploadFileStatus = 'error' | 'success' | 'done' | 'uploading' | 'removed';
 
+export interface ChunkFile {
+  chunk: File | Blob;
+  index: number;
+}
+
 export interface FileObject {
   uid: string;
   size: number;
@@ -11,6 +16,7 @@ export interface FileObject {
   url?: string;
   status?: UploadFileStatus;
   percent?: number;
-  originFileObj?: File | Blob;
+  originFileObj: File | Blob;
+  chunkFileList: ChunkFile[];
   type: string;
 }

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Button } from 'antd';
+// import { Button } from 'antd';
 import { FileObject } from '../../constants/upload';
 import InputFile from '../input-file';
+import request from '../../common/request';
 
 interface IState {
   fileList: FileObject[];
@@ -15,13 +16,33 @@ class UploadComp extends Component<{}, IState> {
   //   uploading: false,
   // };
 
-  // beforeUpload = (file: UploadFile): boolean => {
-  //   const { fileList } = this.state;
-  //   this.setState({
-  //     fileList: [...fileList, file],
-  //   });
-  //   return false;
-  // }
+  private fileObject: FileObject | null = null;
+
+  beforeUpload = (fileObject: FileObject): void => {
+    this.fileObject = fileObject;
+    this.startUpload();
+  }
+
+  startUpload = async () => {
+    if (!this.fileObject) {
+      return;
+    }
+    const { chunkFileList } = this.fileObject;
+    if (chunkFileList.length === 0) {
+      return;
+    }
+    const { name, uid } = this.fileObject;
+    const requestList = chunkFileList
+      .map(({ chunk, index }) => {
+        const formData: FormData = new FormData();
+        formData.append('filename', name);
+        formData.append('chunk', chunk);
+        formData.append('hash', uid);
+        formData.append('index', String(index));
+        return request.post('/upload', formData);
+      });
+    await Promise.all(requestList);
+  }
 
   // onRemove = (file: UploadFile) => {
   //   const newFileList: UploadFile[] = [...this.state.fileList];
@@ -43,15 +64,7 @@ class UploadComp extends Component<{}, IState> {
     // const { fileList, uploading } = this.state;
     return (
       <div>
-        {/* <Button
-          type="primary"
-          onClick={this.handleUpload}
-          disabled={fileList.length === 0}
-          loading={uploading}
-          style={{ marginTop: 16 }}
-        >
-          {uploading ? 'Uploading' : 'Start Upload'}
-        </Button> */}
+        <InputFile beforeUpload={this.beforeUpload} />
       </div>
     );
   }
