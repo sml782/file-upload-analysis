@@ -2,11 +2,8 @@ import React, { Component, Fragment } from 'react';
 import { Button, Progress, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import calculateHash from '../../common/file-hash';
-import { FileObject, ChunkFile } from '../../constants/upload';
+import { FileObject, ChunkFile, initChunkSize } from '../../constants/upload';
 import Style from './index.module.scss';
-
-// 初始切片大小
-const initChunkSize: number = 10 * 1024 * 1024;
 
 interface IProps {
   beforeUpload?: (fileObject: FileObject) => void;
@@ -46,6 +43,7 @@ class InputFile extends Component<IProps, IState> {
       return;
     }
     this.lastFile = file;
+    console.log(file);
 
     // 分片
     this.createChunkList();
@@ -65,7 +63,7 @@ class InputFile extends Component<IProps, IState> {
     }
     setTimeout(() => {
       this.endCalculateHash();
-    }, 3000);
+    }, 1000);
   }
 
   // 开始计算 hash
@@ -106,6 +104,13 @@ class InputFile extends Component<IProps, IState> {
       chunkFileList: this.lastChunkList,
       type,
     };
+
+    const { current: inputElement } = this.inputRef;
+    // 清空文件
+    if (inputElement) {
+      inputElement.value = '';
+    }
+
 
     if (!beforeUpload) {
       return;
@@ -149,7 +154,10 @@ class InputFile extends Component<IProps, IState> {
       return null;
     }
     return (
-      <Progress percent={hashPrecent} />
+      <div>
+        计算hash中
+        <Progress percent={hashPrecent} />
+      </div>
     );
   }
 

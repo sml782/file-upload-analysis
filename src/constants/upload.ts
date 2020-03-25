@@ -20,3 +20,6 @@ export interface FileObject {
   chunkFileList: ChunkFile[];
   type: string;
 }
+
+// 初始切片大小
+export const initChunkSize: number = 10 * 1024 * 1024;

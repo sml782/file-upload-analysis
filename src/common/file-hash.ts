@@ -24,7 +24,8 @@ const calculateHash: CalculateHash = (chunkList, callback) => {
 
     fileReader.addEventListener('load', () => {
       spark.append(fileReader.result as ArrayBuffer); // Append array buffer
-      callback((tagnum / cListLength) * 100);
+      const percent: number = (tagnum / cListLength) * 100;
+      callback(Number(percent.toFixed(2)));
       tagnum += 1;
 
       if (tagnum < cListLength) {
