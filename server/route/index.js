@@ -16,4 +16,7 @@ router.post('/', multipart(), file.uploadChunk);
 // 合成切片
 router.post('/merge', multipart(), file.mergeChunk);
 
+// 验证切片
+router.get('/verify', file.verifyFileHas);
+
 module.exports = router;

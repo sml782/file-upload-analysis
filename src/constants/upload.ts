@@ -22,4 +22,14 @@ export interface FileObject {
 }
 
 // 初始切片大小
-export const initChunkSize: number = 10 * 1024 * 1024;
+export const initChunkSize: number = 512 * 1024;
+
+export interface UploadResult {
+  success: boolean;
+  data?: {
+    uploaded?: boolean;
+    uploadedList?: string[];
+    filename?: string;
+  };
+  message: string;
+}

@@ -45,6 +45,9 @@ class InputFile extends Component<IProps, IState> {
     this.lastFile = file;
     console.log(file);
 
+    // 清空inputfile
+    this.clearInputFile();
+
     // 分片
     this.createChunkList();
 
@@ -87,6 +90,16 @@ class InputFile extends Component<IProps, IState> {
     });
   }
 
+  // 清空 input
+  clearInputFile = (): void => {
+    const { current: inputElement } = this.inputRef;
+    // 清空文件
+    if (!inputElement) {
+      return;
+    }
+    inputElement.value = '';
+  }
+
   // 构建文件对象
   handleCreateFileObject = (hash: string): void => {
     const { beforeUpload } = this.props;
@@ -104,13 +117,6 @@ class InputFile extends Component<IProps, IState> {
       chunkFileList: this.lastChunkList,
       type,
     };
-
-    const { current: inputElement } = this.inputRef;
-    // 清空文件
-    if (inputElement) {
-      inputElement.value = '';
-    }
-
 
     if (!beforeUpload) {
       return;
