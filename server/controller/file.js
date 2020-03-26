@@ -59,6 +59,14 @@ exports.uploadChunk = function (req, res) {
     });
   }
 
+  // 概率失败
+  if (Math.random() < 0.5) {
+    return res.json({
+      success: false,
+      message: '主动失败',
+    });
+  }
+
   fse.moveSync(chunk.path, chunkfile);
 
   res.json({
