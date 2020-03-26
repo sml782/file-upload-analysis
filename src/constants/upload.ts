@@ -4,6 +4,8 @@ export type UploadFileStatus = 'error' | 'success' | 'done' | 'uploading' | 'rem
 export interface ChunkFile {
   chunk: File | Blob;
   index: number;
+  status?: Omit<UploadFileStatus, 'removed'>;
+  retryTime: number;
 }
 
 export interface FileObject {
@@ -21,9 +23,6 @@ export interface FileObject {
   type: string;
 }
 
-// 初始切片大小
-export const initChunkSize: number = 512 * 1024;
-
 export interface UploadResult {
   success: boolean;
   data?: {
@@ -33,3 +32,9 @@ export interface UploadResult {
   };
   message: string;
 }
+
+// 初始切片大小
+export const initChunkSize: number = 1024 * 1024;
+
+// 重试次数
+export const retryTime = 5;

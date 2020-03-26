@@ -2,10 +2,11 @@ import React, { Component, Fragment } from 'react';
 import { Button, Progress, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import calculateHash from '../../common/file-hash';
-import { FileObject, ChunkFile, initChunkSize } from '../../constants/upload';
+import { FileObject, ChunkFile, initChunkSize, retryTime } from '../../constants/upload';
 import Style from './index.module.scss';
 
 interface IProps {
+  isUpload: boolean;
   beforeUpload?: (fileObject: FileObject) => void;
 }
 interface IState {
@@ -138,6 +139,8 @@ class InputFile extends Component<IProps, IState> {
       chunkList.push({
         chunk: this.lastFile.slice(currentSize, currentSize + initChunkSize),
         index: chunkIndex,
+        status: 'uploading',
+        retryTime,
       });
       chunkIndex += 1;
       currentSize += initChunkSize;
@@ -168,6 +171,7 @@ class InputFile extends Component<IProps, IState> {
   }
 
   render() {
+    const { isUpload } = this.props;
     const { hashing } = this.state;
     return (
       <div className={Style.upload}>
@@ -176,7 +180,7 @@ class InputFile extends Component<IProps, IState> {
           type="ghost"
           size="large"
           onClick={this.onSelect}
-          loading={hashing}
+          loading={hashing || isUpload}
         >
           {hashing ?
             'Upload' :
