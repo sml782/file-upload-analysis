@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Progress, message } from 'antd';
+import { Button, Progress, message } from 'antd';
 import { AxiosResponse } from 'axios';
 import { FileObject, initChunkSize, UploadResult, retryTime, ChunkFile } from '../../constants/upload';
 import InputFile from '../input-file';
@@ -18,13 +18,25 @@ class UploadComp extends Component<{}, IState> {
     percent: 0,
   };
 
-  private uploadedList: number[] = []
+  private uploadedList: Set<number> = new Set()
 
   private fileObject: FileObject | null = null;
 
   private uploadFileIndex = 0;
 
   private aisleFlag = retryTime;
+
+  // 获取文件上传是否出错
+  getIsUploadError = (iswarn = true) => {
+    const { status: fileStatus } = this.fileObject as FileObject;
+    if (fileStatus !== 'error') {
+      return false;
+    }
+    if (iswarn) {
+      message.error('文件已经上传出错, 请重试');
+    }
+    return true;
+  }
 
   // 更改控制请求通道
   changeAisleFlag = (aisleFlag: number, notUpload?: boolean) => {
@@ -36,29 +48,43 @@ class UploadComp extends Component<{}, IState> {
     if (notUpload) {
       return;
     }
+
+    if (this.getIsUploadError()) {
+      return;
+    }
+
     // 通知取出分片上传
     return this.notifyAisleRequest();
+    // return () => 1;
+  }
+
+  retryUpload = () => {
+    message.success('重新尝试文件上传');
+    this.startUpload();
   }
 
   sUpload = () => {
-    this.changeAisleFlag(5, true);
+    (this.fileObject as FileObject).status = 'uploading';
+    this.uploadFileIndex = 0;
     this.setState({
       uploading: true,
       percent: 0,
-    });
+    }, () => this.changeAisleFlag(5, true));
   }
 
   eUpload = () => {
-    this.uploadFileIndex = 0;
     this.setState({
       uploading: false,
     });
   }
 
+
+
   // 上传失败
   failUpload = () => {
     message.success('文件上传失败');
     this.uploadFileIndex = 0;
+    (this.fileObject as FileObject).status = 'error';
     this.changeAisleFlag(5, true);
   }
 
@@ -71,7 +97,7 @@ class UploadComp extends Component<{}, IState> {
       return;
     }
     // 上传切片成功
-    message.success('上传切片成功');
+    console.log('上传切片成功');
     setTimeout(this.eUpload, 1000);
 
     // 秒传
@@ -98,15 +124,16 @@ class UploadComp extends Component<{}, IState> {
       return;
     }
     const { chunkFileList } = this.fileObject;
-    this.uploadedList.push(index);
-    const originPercent: number = (this.uploadedList.length / chunkFileList.length) * 100;
+    this.uploadedList.add(index);
+    console.log(this.uploadedList);
+    const originPercent: number = (this.uploadedList.size / chunkFileList.length) * 100;
     const precent = Number(originPercent.toFixed(2));
     this.notifyPercent(precent);
   }
 
   beforeUpload = (fileObject: FileObject): void => {
     this.fileObject = fileObject;
-    this.uploadedList = [];
+    this.uploadedList.clear();
     this.startUpload();
   }
 
@@ -167,6 +194,7 @@ class UploadComp extends Component<{}, IState> {
     });
 
     this.uploadFileIndex += lastAisleFlag;
+    this.changeAisleFlag(this.aisleFlag - lastAisleFlag, true);
 
     return {
       nextChunkList,
@@ -177,45 +205,34 @@ class UploadComp extends Component<{}, IState> {
   // 通道上传, 控制最大请求 5 条
   notifyAisleRequest = () => {
     const { name, uid, chunkFileList } = this.fileObject as FileObject;
-    console.log({
-      aisleFlag: this.aisleFlag,
-      uploadFileIndex: this.uploadFileIndex,
-    });
+
+    if (this.getIsUploadError()) {
+      return;
+    }
+
     if (this.aisleFlag === 0) {
       return;
     }
 
-    const { nextChunkList, usedAisle } = this.getNextChunkList(chunkFileList);
-    console.log({
-      nextChunkList,
-      usedAisle,
-    });
+    const { nextChunkList } = this.getNextChunkList(chunkFileList);
     if (nextChunkList.length === 0) {
       return;
     }
 
-    setTimeout(() => {
+    nextChunkList.map(({ chunk, index, status }) => {
+      if (status === 'success') {
+        return;
+      }
 
-      this.uploadFileIndex = this.uploadFileIndex + usedAisle;
+      const formData: FormData = new FormData();
+      formData.append('filename', name);
+      formData.append('filehash', `${uid}-${index}`);
+      formData.append('chunk', chunk);
+      formData.append('hash', uid);
+      formData.append('index', String(index));
 
-      this.changeAisleFlag(this.aisleFlag - usedAisle);
-
-      nextChunkList.map(({ chunk, index, status }) => {
-        if (status === 'success') {
-          return;
-        }
-
-        const formData: FormData = new FormData();
-        formData.append('filename', name);
-        formData.append('filehash', `${uid}-${index}`);
-        formData.append('chunk', chunk);
-        formData.append('hash', uid);
-        formData.append('index', String(index));
-
-        return this.sendRequest(index, formData, retryTime);
-      });
-    }, 5000);
-
+      return this.sendRequest(index, formData, retryTime);
+    });
   }
 
   // 发送切片
@@ -230,7 +247,7 @@ class UploadComp extends Component<{}, IState> {
           // 更改状态
           chunkFileList[index].status = 'success';
 
-          this.changeAisleFlag(this.aisleFlag + 1);
+          this.changeAisleFlag(this.aisleFlag + 1, this.getIsUploadError(false));
           console.log(index, '成功');
           return;
         }
@@ -263,6 +280,14 @@ class UploadComp extends Component<{}, IState> {
     return ret;
   }
 
+  // 下一组分片
+  nextGroupChunk = () => {
+    if (!this.fileObject) {
+      return message.warn('请先上传文件');
+    }
+    this.notifyAisleRequest();
+  }
+
   // onRemove = (file: UploadFile) => {
   //   const newFileList: UploadFile[] = [...this.state.fileList];
   //   const fileIndex = newFileList.findIndex((f) => f.uid === file.uid);
@@ -280,6 +305,7 @@ class UploadComp extends Component<{}, IState> {
     return (
       <div>
         上传中
+        <Button type="primary" onClick={this.nextGroupChunk} >下一组分片</Button>
         <Progress percent={percent} />
       </div>
     );
@@ -291,6 +317,7 @@ class UploadComp extends Component<{}, IState> {
       <div className={Style['upload-box']}>
         <InputFile isUpload={uploading} beforeUpload={this.beforeUpload} />
         {this.renderPercent()}
+        <Button onClick={this.retryUpload}>重试</Button>
       </div>
     );
   }

@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node scripts/start.js",
     "server": "./node_modules/.bin/nodemon server/app.js",
+    "server:inspect": "./node_modules/.bin/nodemon --inspect server/app.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js"
   },

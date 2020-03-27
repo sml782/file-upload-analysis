@@ -1,11 +1,10 @@
 
-export type UploadFileStatus = 'error' | 'success' | 'done' | 'uploading' | 'removed';
+export type UploadFileStatus = 'error' | 'success' | 'done' | 'uploading' | 'removed' | 'pause';
 
 export interface ChunkFile {
   chunk: File | Blob;
   index: number;
   status?: Omit<UploadFileStatus, 'removed'>;
-  retryTime: number;
 }
 
 export interface FileObject {

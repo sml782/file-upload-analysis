@@ -2,7 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { Button, Progress, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import calculateHash from '../../common/file-hash';
-import { FileObject, ChunkFile, initChunkSize, retryTime } from '../../constants/upload';
+import { FileObject, ChunkFile, initChunkSize } from '../../constants/upload';
 import Style from './index.module.scss';
 
 interface IProps {
@@ -140,7 +140,6 @@ class InputFile extends Component<IProps, IState> {
         chunk: this.lastFile.slice(currentSize, currentSize + initChunkSize),
         index: chunkIndex,
         status: 'uploading',
-        retryTime,
       });
       chunkIndex += 1;
       currentSize += initChunkSize;
